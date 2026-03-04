@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《谁拿走了钱袋》识字与写字</title>
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+    <style>
+        /* 全局 Q版可爱风格 */
+        body {
+            font-family: 'Comic Sans MS', 'Nunito', 'Microsoft YaHei', sans-serif;
+            background-color: #FFF8E7;
+            color: #5D4037;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #E67E22;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 50px;
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* 左侧区域 */
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .character-box {
+            width: 320px; 
+            height: 320px; 
+            border: 5px solid #FFB74D;
+            border-radius: 20px;
+            background-color: #FAFAFA;
+            background-image: 
+                linear-gradient(to right, transparent 49.5%, #FFE0B2 49.5%, #FFE0B2 50.5%, transparent 50.5%),
+                linear-gradient(to bottom, transparent 49.5%, #FFE0B2 49.5%, #FFE0B2 50.5%, transparent 50.5%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* 错误提示文字的样式 */
+        .error-msg {
+            color: #D32F2F;
+            font-size: 16px;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255,0,0,0.05);
+            border-radius: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            border: none;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn-watch { background-color: #4DB6AC; color: white; }
+        .btn-write { background-color: #66BB6A; color: white; }
+
+        /* 右侧区域 */
+        .right-panel {
+            flex: 1;
+            min-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .char-info {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .current-char-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .pinyin-box {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .pinyin { font-size: 28px; color: #E67E22; font-weight: bold;}
+
+        .info-card {
+            background-color: #FFF3E0;
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px dashed #FFCC80;
+        }
+
+        .info-title {
+            font-size: 14px;
+            color: #8D6E63;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .info-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            color: #4E342E;
+            margin-bottom: 10px;
+        }
+        
+        .info-content:last-child { margin-bottom: 0; }
+
+        .speaker-icon {
+            cursor: pointer;
+            font-size: 24px;
+            transition: transform 0.2s;
+            user-select: none;
+            background-color: #FFE0B2;
+            padding: 5px 10px;
+            border-radius: 15px;
+        }
+        
+        .speaker-icon:hover { 
+            transform: scale(1.1); 
+            background-color: #FFCC80;
+        }
+
+        /* 底部导航 */
+        .footer {
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .btn-nav { background-color: #FFCA28; color: #5D4037; font-size: 20px; padding: 12px 30px;}
+        .btn-nav:disabled { background-color: #E0E0E0; cursor: not-allowed;}
+        .progress { font-size: 20px; font-weight: bold; color: #8D6E63; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        🌟 《谁拿走了钱袋》识字与写字 🌟
+    </div>
+
+    <div class="main-container">
+        <div class="left-panel">
+            <div id="character-target" class="character-box"></div>
+            <div class="action-buttons">
+                <button class="btn-watch" onclick="animateStroke()">📺 演示笔顺</button>
+                <button class="btn-write" onclick="startQuiz()">✍️ 习写生字</button>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="char-info">
+                <div id="display-char" class="current-char-display">案</div>
+                <div class="pinyin-box">
+                    <span id="pinyin" class="pinyin">àn</span>
+                    <span class="speaker-icon" onclick="speakRawText(document.getElementById('display-char').innerText)" title="读生字">🔊</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-title">✨ 词语</div>
+                <div class="info-content">
+                    <span class="speaker-icon" onclick="speakElement('word1')" title="读词语">🔊</span>
+                    <span id="word1">报案</span>
+                </div>
+                <div class="info-content">
+                    <span class="speaker-icon" onclick="speakElement('word2')" title="读词语">🔊</span>
+                    <span id="word2">案件</span>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-title">📖 例句</div>
+                <div class="info-content" style="align-items: flex-start;">
+                    <span class="speaker-icon" onclick="speakElement('sentence')" title="读例句">🔊</span>
+                    <span id="sentence" style="line-height: 1.5;">警察接到了市民的报案。</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <button id="prev-btn" class="btn-nav" onclick="prevChar()">⬅️ 上一个</button>
+        <div class="progress"><span id="current-page">1</span> / <span id="total-page">19</span></div>
+        <button id="next-btn" class="btn-nav" onclick="nextChar()">下一个 ➡️</button>
+    </div>
+
+    <script>
+        const lessonData = [
+            { char: '案', pinyin: 'àn', word1: '报案', word2: '案件', sentence: '警察接到了市民的报案。' },
+            { char: '侦', pinyin: 'zhēn', word1: '侦探', word2: '侦查', sentence: '他长大后想成为一名聪明的侦探。' },
+            { char: '狱', pinyin: 'yù', word1: '入狱', word2: '监狱', sentence: '那个歹徒因为做了坏事而入狱了。' },
+            { char: '撬', pinyin: 'qiào', word1: '撬开', word2: '撬动', sentence: '小偷试图用工具撬开大门。' },
+            { char: '枚', pinyin: 'méi', word1: '一枚徽章', word2: '不胜枚举', sentence: '他的胸前佩戴着一枚闪亮的徽章。' },
+            { char: '徽', pinyin: 'huī', word1: '徽章', word2: '国徽', sentence: '班长把金色的徽章别在校服上。' },
+            { char: '鲁', pinyin: 'lǔ', word1: '鲁莽', word2: '粗鲁', sentence: '做事情要三思而行，千万不能太鲁莽。' },
+            { char: '莽', pinyin: 'mǎng', word1: '鲁莽', word2: '草莽', sentence: '他因为一时的鲁莽而犯了严重的错误。' },
+            { char: '俊', pinyin: 'jùn', word1: '英俊', word2: '俊俏', sentence: '故事里的王子长得十分英俊。' },
+            { char: '跛', pinyin: 'bǒ', word1: '一跛一跛', word2: '跛脚', sentence: '他跌倒受了伤，走起路来一跛一跛的。' },
+            { char: '霉', pinyin: 'méi', word1: '倒霉', word2: '发霉', sentence: '今天出门忘了带伞，偏偏又下大雨，真倒霉！' },
+            { char: '隧', pinyin: 'suì', word1: '隧道', word2: '隧洞', sentence: '火车在黑暗的隧道里快速地行驶着。' },
+            { char: '澄', pinyin: 'chéng', word1: '澄清', word2: '清澄', sentence: '他马上向大家澄清了这件误会。' },
+            { char: '睹', pinyin: 'dǔ', word1: '视若无睹', word2: '目睹', sentence: '对于别人的困难，我们不能视若无睹。' },
+            { char: '歹', pinyin: 'dǎi', word1: '歹徒', word2: '不知好歹', sentence: '勇敢的警察成功抓住了那名持刀的歹徒。' },
+            { char: '辰', pinyin: 'chén', word1: '时辰', word2: '星辰', sentence: '古代的人利用时辰来计算时间。' },
+            { char: '斥', pinyin: 'chì', word1: '斥责', word2: '排斥', sentence: '老师严厉地斥责了那个欺负同学的人。' },
+            { char: '锁', pinyin: 'suǒ', word1: '眉头深锁', word2: '锁门', sentence: '遇到这道解不开的难题，他不禁眉头深锁。' },
+            { char: '党', pinyin: 'dǎng', word1: '同党', word2: '结党', sentence: '警察把那个坏人和他的同党一网打尽。' }
+        ];
+
+        let currentIndex = 0;
+        let writer = null;
+
+        // 初始化写字板（加入防崩溃机制）
+        function initWriter() {
+            const target = document.getElementById('character-target');
+            target.innerHTML = ''; 
+            writer = null; // 重置
+
+            try {
+                // 检查插件是否成功加载
+                if (typeof HanziWriter === 'undefined') {
+                    target.innerHTML = '<div class="error-msg">⚠️ 写字板插件未加载。<br>这可能是由于网络问题。<br>发音和翻页功能仍可正常使用。</div>';
+                    return;
+                }
+
+                writer = HanziWriter.create('character-target', lessonData[currentIndex].char, {
+                    width: 320, 
+                    height: 320, 
+                    padding: 25,
+                    showOutline: true,
+                    strokeAnimationSpeed: 1.5,
+                    delayBetweenStrokes: 150,
+                    strokeColor: '#333333',
+                    highlightColor: '#FFCA28', 
+                    drawingWidth: 20
+                });
+            } catch (error) {
+                console.error("写字板加载出错：", error);
+                target.innerHTML = '<div class="error-msg">⚠️ 无法获取该字的笔画数据。</div>';
+            }
+        }
+
+        // 更新界面数据
+        function updateUI() {
+            try {
+                const data = lessonData[currentIndex];
+                document.getElementById('display-char').innerText = data.char;
+                document.getElementById('pinyin').innerText = data.pinyin;
+                document.getElementById('word1').innerText = data.word1;
+                document.getElementById('word2').innerText = data.word2;
+                document.getElementById('sentence').innerText = data.sentence;
+
+                document.getElementById('current-page').innerText = currentIndex + 1;
+                document.getElementById('total-page').innerText = lessonData.length;
+
+                document.getElementById('prev-btn').disabled = currentIndex === 0;
+                document.getElementById('next-btn').disabled = currentIndex === lessonData.length - 1;
+
+                initWriter();
+            } catch (error) {
+                console.error("更新界面出错：", error);
+            }
+        }
+
+        // 演示笔顺
+        function animateStroke() {
+            if (writer) {
+                writer.showCharacter(); 
+                writer.animateCharacter();
+            } else {
+                alert("笔顺数据未加载成功，无法演示。");
+            }
+        }
+
+        // 习写生字
+        function startQuiz() {
+            if (writer) {
+                writer.quiz({
+                    onComplete: function() {
+                        setTimeout(() => alert('🎉 写得真棒！完全正确！'), 200);
+                    }
+                });
+            } else {
+                alert("笔顺数据未加载成功，无法习写。");
+            }
+        }
+
+        // 翻页
+        function nextChar() {
+            if (currentIndex < lessonData.length - 1) {
+                currentIndex++;
+                updateUI();
+            }
+        }
+
+        function prevChar() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateUI();
+            }
+        }
+
+        // --- 优化后的发音引擎 ---
+        function speakRawText(text) {
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel(); // 先清空队列，防止卡死
+                    
+                    // 稍微延迟发音，给浏览器反应的时间
+                    setTimeout(() => {
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        utterance.lang = 'zh-CN'; 
+                        utterance.rate = 0.8; 
+                        window.speechSynthesis.speak(utterance);
+                    }, 50);
+                } else {
+                    alert("抱歉，您的浏览器不支持发音功能。建议使用 Google Chrome 浏览器。");
+                }
+            } catch (error) {
+                console.error("发音功能出错：", error);
+            }
+        }
+
+        function speakElement(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            speakRawText(text);
+        }
+
+        // 页面加载完毕后初始化
+        window.onload = function() {
+            updateUI();
+        };
+
+    </script>
+</body>
+</html>
